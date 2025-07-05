@@ -1,8 +1,16 @@
-import { Button } from "./components/ui/button";
+import { Outlet, Link } from "react-router-dom";
+
 const App = () => {
   return (
-    <div className="bg-pink-400 text-xl font-bold hover:bg-pink-800">
-      <Button className="bg-white text-xl text-blue-300">click me</Button>
+    <div>
+      <nav style={{ marginBottom: "1rem" }}>
+        <Link to="/login" style={{ marginRight: 10 }}>
+          Login
+        </Link>
+        <Link to="/dashboard">Dashboard</Link>
+      </nav>
+
+      <Outlet />
     </div>
   );
 };

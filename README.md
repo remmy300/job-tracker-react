@@ -57,12 +57,6 @@ Track your job applications, manage statuses, add excitement ratings, and never 
 
 ---
 
-## 🧪 Screenshots
-
-> _Coming soon..._ (Include some GIFs or images of the dashboard, form, login page etc.)
-
----
-
 ## 🚀 Getting Started
 
 ### 1. Clone the Repo
