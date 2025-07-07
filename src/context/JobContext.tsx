@@ -19,7 +19,7 @@ interface JobContextType {
   jobs: Job[];
   addJob: (job: Omit<Job, "id">) => Promise<void>;
   deleteJob: (id: string) => Promise<void>;
-  updateJob: (job: Job) => Promise<void>;
+  updateJob: (job: { id: string } & Partial<Job>) => Promise<void>;
 }
 
 // Helper function to safely convert any date format
@@ -66,6 +66,7 @@ const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
         const fetchedJob: Job[] = snapshot.docs.map((doc) => {
           const data = doc.data();
+          console.log("📄 Job doc:", data);
           return {
             ...data,
             id: doc.id,
@@ -84,6 +85,7 @@ const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     return () => unsub();
   }, [user?.uid]);
+
   const addJob = async (job: Omit<Job, "id">) => {
     if (!user) return;
     console.log("Current user:", user);
@@ -93,14 +95,14 @@ const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       userId: user.uid,
       dateSaved: serverTimestamp(),
     });
+    console.log("🔥 Job being saved:", job);
   };
 
   const deleteJob = async (id: string) => {
     await deleteDoc(doc(db, "jobs", id));
   };
 
-  const updateJob = async (job: Job) => {
-    const { id, ...rest } = job;
+  const updateJob = async ({ id, ...rest }: { id: string } & Partial<Job>) => {
     await updateDoc(doc(db, "jobs", id!), rest);
   };
 

@@ -1,17 +1,18 @@
 import StatusSteps from "../components/jobs/StatusSteps";
-import JobTable from "../components/jobs/JobTable";
 
 import JobModal from "../components/jobs/AddJobModal";
-import { useJobContext } from "../context/JobContext";
+
+import JobRow from "../components/jobs/JobRow";
 
 const DashBoard = () => {
-  const { jobs } = useJobContext();
-
   return (
     <div>
       <StatusSteps />
-      <JobModal />
-      <JobTable jobs={jobs} />
+      <div className=" flex items-end justify-end">
+        <JobModal />
+      </div>
+
+      <JobRow />
     </div>
   );
 };

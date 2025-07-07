@@ -22,6 +22,7 @@ const JobModal = () => {
   const { user } = useAuth();
 
   const handleFormSubmit = async (data: JobFormValues) => {
+    console.log("📥 Form data submitted:", data);
     if (!user) {
       console.log("User is not authenticated.");
       return;
@@ -30,14 +31,8 @@ const JobModal = () => {
       await addJob({
         ...data,
         userId: user.uid,
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
         status: "Bookmarked",
-        title: "",
-        maxSalary: "",
-        dateSaved: "",
-        dateApplied: "",
-        excitement: 0,
-        deadline: "",
       });
       console.log("Job added succefully:", data);
     } catch (error) {
@@ -49,7 +44,9 @@ const JobModal = () => {
     <Dialog>
       <form>
         <DialogTrigger asChild>
-          <Button variant="outline">Add a New Job</Button>
+          <Button variant="outline" className="bg-green-300 m-2">
+            Add a New Job
+          </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

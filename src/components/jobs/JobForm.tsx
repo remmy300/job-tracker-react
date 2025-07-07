@@ -12,13 +12,12 @@ import {
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
-
 export const jobSchema = z.object({
   title: z.string().min(1, "Job title is required"),
-  url: z.string().url("Enter a valid URL"),
-  company: z.string().min(1),
-  location: z.string().min(1),
-  description: z.string().min(1),
+  company: z.string().min(1, "Company name is required"),
+  location: z.string().min(1, "Location is required"),
+  url: z.string().url("Enter a valid URL").optional(),
+  description: z.string().optional(),
 });
 
 export type JobFormValues = z.infer<typeof jobSchema>;
@@ -42,6 +41,8 @@ const JobForm: React.FC<Props> = ({ onSubmit }) => {
   const handleFormSubmit = async (data: JobFormValues) => {
     try {
       await onSubmit(data);
+      console.log("Form data:", data);
+
       form.reset();
     } catch (err) {
       console.error("Submission failed:", err);
