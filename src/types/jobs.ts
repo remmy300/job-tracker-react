@@ -1,19 +1,21 @@
 export type JobStatus =
-  | "Wishlist"
+  | "Bookmarked"
+  | "Applying"
   | "Applied"
-  | "Interview"
-  | "Offer"
-  | "Rejected";
+  | "Interviewing"
+  | "Negotiating"
+  | "Accepted";
 
 export interface Job {
   id?: string;
   title: string;
   company: string;
   status: JobStatus;
-  appliedDate: string;
+  location: string;
+  maxSalary: string;
+  dateSaved: string;
+  dateApplied: string;
   interviewDate?: string;
   excitement: number;
-  link?: string;
-  notes?: string;
-  userId: string;
+  deadline: string;
 }

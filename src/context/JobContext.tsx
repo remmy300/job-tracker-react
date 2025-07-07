@@ -7,6 +7,8 @@ import {
   collection,
   where,
   onSnapshot,
+  serverTimestamp,
+  Timestamp,
 } from "firebase/firestore";
 import { useAuth } from "./AuthContext";
 import React, { useState, useEffect, useContext, createContext } from "react";
@@ -20,6 +22,33 @@ interface JobContextType {
   updateJob: (job: Job) => Promise<void>;
 }
 
+// Helper function to safely convert any date format
+const convertFirestoreDate = (date: unknown): string | undefined => {
+  if (!date) return undefined;
+
+  // If it's a Firestore Timestamp
+  if (date instanceof Timestamp) {
+    return date.toDate().toISOString();
+  }
+
+  // If it's a JavaScript Date object
+  if (date instanceof Date) {
+    return date.toISOString();
+  }
+
+  // If it's already a string
+  if (typeof date === "string") {
+    return date;
+  }
+
+  // If it's a number (milliseconds)
+  if (typeof date === "number") {
+    return new Date(date).toISOString();
+  }
+
+  return undefined;
+};
+
 const JobContext = createContext<JobContextType | null>(null);
 
 const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -30,20 +59,40 @@ const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!user) return;
     const q = query(collection(db, "jobs"), where("userId", "==", user.uid));
 
-    const unsub = onSnapshot(q, (snapshot) => {
-      const fetchedJob: Job[] = snapshot.docs.map((doc) => ({
-        ...(doc.data() as Job),
-        id: doc.id,
-      }));
+    const unsub = onSnapshot(
+      q,
+      (snapshot) => {
+        console.log("Snapshot docs:", snapshot.docs);
 
-      setJobs(fetchedJob);
-    });
+        const fetchedJob: Job[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            ...data,
+            id: doc.id,
+            dateSaved: convertFirestoreDate(data.dateSaved),
+            dateApplied: convertFirestoreDate(data.dateApplied),
+            deadline: convertFirestoreDate(data.deadline),
+            interviewDate: convertFirestoreDate(data.interviewDate),
+          } as Job;
+        });
+        setJobs(fetchedJob);
+      },
+      (error) => {
+        console.error("Error fetching jobs:", error);
+      }
+    );
 
-    return unsub;
-  }, [user]);
-
+    return () => unsub();
+  }, [user?.uid]);
   const addJob = async (job: Omit<Job, "id">) => {
-    await addDoc(collection(db, "jobs"), job);
+    if (!user) return;
+    console.log("Current user:", user);
+
+    await addDoc(collection(db, "jobs"), {
+      ...job,
+      userId: user.uid,
+      dateSaved: serverTimestamp(),
+    });
   };
 
   const deleteJob = async (id: string) => {

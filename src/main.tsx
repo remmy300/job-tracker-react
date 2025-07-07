@@ -4,9 +4,15 @@ import "./index.css";
 
 import { RouterProvider } from "react-router-dom";
 import { router } from "./routing/route.ts";
+import JobProvider from "./context/JobContext.tsx";
+import { AuthProvider } from "./context/AuthContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <JobProvider>
+        <RouterProvider router={router} />
+      </JobProvider>
+    </AuthProvider>
   </StrictMode>
 );
