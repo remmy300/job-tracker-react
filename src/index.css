@@ -1,4 +1,15 @@
 @import "tailwindcss";
+
+.clip-step {
+  clip-path: polygon(
+    0 0,
+    /* top-left */ 95% 0,
+    /* top-right slanted in */ 100% 50%,
+    /* middle of right edge (arrow tip) */ 95% 100%,
+    /* bottom-right slanted in */ 0 100% /* bottom-left */
+  );
+}
+
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));

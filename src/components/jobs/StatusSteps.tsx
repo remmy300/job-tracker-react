@@ -1,4 +1,3 @@
-import { Button } from "../ui/button";
 import type { JobStatus } from "../../types/jobs";
 
 const statuses: JobStatus[] = [
@@ -10,27 +9,46 @@ const statuses: JobStatus[] = [
   "Accepted",
 ];
 
-const StatusSteps = () => {
+interface Job {
+  status: JobStatus;
+}
+
+interface Props {
+  jobs: Job[];
+  onStatusClick?: (status: JobStatus) => void;
+}
+
+const StatusSteps = ({ jobs = [], onStatusClick }: Props) => {
+  const statusCounts = jobs.reduce((acc: Record<JobStatus, number>, job) => {
+    acc[job.status] = (acc[job.status] || 0) + 1;
+    return acc;
+  }, {} as Record<JobStatus, number>);
+
   return (
-    <div className="shadow rounded p-4 flex gap-2 justify-between overflow-x-auto">
-      {statuses.map((status, index) => (
-        <Button
-          key={status}
-          className={`py-2 px-5 rounded-sm text-center transition-all
-            font-semibold uppercase text-sm
-            border border-gray-200 hover:border-blue-400
-            bg-white hover:bg-blue-50
-            text-gray-700 hover:text-blue-600
-            focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50
-            active:bg-blue-100 active:scale-95
-            flex flex-col items-center
-            ${index === 0 ? "rounded-l-xl" : ""} 
-            ${index === statuses.length - 1 ? "rounded-r-xl" : ""}
-          `}
-        >
-          {status}
-        </Button>
-      ))}
+    <div className="flex justify-between overflow-x-auto bg-white/75 rounded shadow border border-gray-300">
+      {statuses.map((status, index) => {
+        const isFirst = index === 0;
+        const isLast = index === statuses.length - 1;
+
+        return (
+          <div
+            key={status}
+            onClick={() => onStatusClick?.(status)}
+            className={`relative group cursor-pointer px-6 py-4 text-center flex flex-col justify-center items-center
+              bg-white text-gray-800 border-r border-gray-600 transition-colors
+              hover:bg-blue-50 hover:text-blue-600
+              ${isFirst ? "rounded-l-xl" : ""}
+              ${isLast ? "rounded-r-xl border-r-0" : ""}
+              clip-step
+            `}
+          >
+            <span className="uppercase font-semibold text-sm">{status}</span>
+            <span className="text-xs font-normal">
+              {statusCounts[status] || "--"}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 };
