@@ -1,6 +1,7 @@
 import type { Job, JobStatus } from "../../types/jobs";
 import { Input } from "../ui/input";
 import { DatePicker } from "../ui/DatePicker";
+import { Checkbox } from "../ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -12,6 +13,9 @@ import {
 interface Props {
   jobs: Job[];
   onUpdate: (id: string, updates: Partial<Job>) => Promise<void>;
+  selectedJobs: string[];
+
+  onToggleSelection: (jobId: string) => void;
 }
 
 const formatDate = (isoString?: string) => {
@@ -19,7 +23,13 @@ const formatDate = (isoString?: string) => {
   return new Date(isoString).toLocaleDateString();
 };
 
-const JobTable = ({ jobs = [], onUpdate }: Props) => {
+const JobTable = ({
+  jobs = [],
+  onUpdate,
+  selectedJobs,
+
+  onToggleSelection,
+}: Props) => {
   const handleStatusUpdate = async (id: string, newStatus: JobStatus) => {
     try {
       await onUpdate(id, { status: newStatus });
@@ -41,6 +51,7 @@ const JobTable = ({ jobs = [], onUpdate }: Props) => {
       <table className="min-w-full border">
         <thead>
           <tr className="bg-gray-100">
+            <th className="p-2 text-left">Checked</th>
             <th className="p-2 text-left">Job Position</th>
             <th className="p-2 text-left">Company</th>
             <th className="p-2 text-left">Max Salary</th>
@@ -58,6 +69,12 @@ const JobTable = ({ jobs = [], onUpdate }: Props) => {
               key={job.id ?? job.title}
               className="border-t  hover:bg-gray-50"
             >
+              <td className="border-r">
+                <Checkbox
+                  checked={selectedJobs.includes(job.id)}
+                  onCheckedChange={() => onToggleSelection(job.id)}
+                />
+              </td>
               <td className="border-r">
                 <Input
                   className="border-0 bg-transparent focus:border-0 focus-visible:ring-0 focus:outline-none hover:bg-transparent"

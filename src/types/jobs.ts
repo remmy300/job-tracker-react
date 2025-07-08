@@ -7,7 +7,7 @@ export type JobStatus =
   | "Accepted";
 
 export interface Job {
-  id?: string;
+  id: string;
   title: string;
   company: string;
   status: JobStatus;
