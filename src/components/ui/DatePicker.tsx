@@ -7,12 +7,15 @@ import {
 } from "../../components/ui/popover";
 import { Button } from "./button";
 import { format } from "date-fns";
+import { cn } from "../../lib/utils";
 
 type DatePickerProps = {
   value: Date | undefined;
   onChange: (date: Date | undefined) => void;
   placeholder?: string;
   disabled?: boolean;
+  isEdited?: boolean;
+  className?: string;
 };
 
 export const DatePicker = ({
@@ -20,6 +23,8 @@ export const DatePicker = ({
   onChange,
   placeholder = "Pick a date",
   disabled = false,
+  isEdited = false,
+  className,
 }: DatePickerProps) => {
   const [open, setOpen] = useState(false);
 
@@ -28,12 +33,16 @@ export const DatePicker = ({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="w-full justify-between text-left border-0 focus:border-0 rounded-none focus:outline-none focus:ring-0 bg-transparent hover:bg-transparent"
+          className={cn(
+            "w-full justify-between text-left border-0 focus:border-0 rounded-none focus:outline-none focus:ring-0 bg-transparent hover:bg-transparent",
+            isEdited && "ring-1 ring-yellow-400",
+            className
+          )}
           disabled={disabled}
           onClick={() => setOpen(!open)}
         >
           {value ? (
-            format(value, "PPP")
+            format(value, "P")
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
           )}

@@ -14,7 +14,7 @@ interface Props {
   jobs: Job[];
   onUpdate: (id: string, updates: Partial<Job>) => Promise<void>;
   selectedJobs: string[];
-
+  editedJobs: Record<string, Partial<Job>>;
   onToggleSelection: (jobId: string) => void;
 }
 
@@ -27,7 +27,7 @@ const JobTable = ({
   jobs = [],
   onUpdate,
   selectedJobs,
-
+  editedJobs,
   onToggleSelection,
 }: Props) => {
   const handleStatusUpdate = async (id: string, newStatus: JobStatus) => {
@@ -36,6 +36,11 @@ const JobTable = ({
     } catch (error) {
       console.error("Failed to update status:", error);
     }
+  };
+
+  // Helper to check if a field was edited
+  const isFieldEdited = (jobId: string, field: keyof Job) => {
+    return editedJobs[jobId] && field in editedJobs[jobId];
   };
 
   if (!Array.isArray(jobs)) {
@@ -64,122 +69,157 @@ const JobTable = ({
           </tr>
         </thead>
         <tbody>
-          {jobs.map((job) => (
-            <tr
-              key={job.id ?? job.title}
-              className="border-t  hover:bg-gray-50"
-            >
-              <td className="border-r">
-                <Checkbox
-                  checked={selectedJobs.includes(job.id)}
-                  onCheckedChange={() => onToggleSelection(job.id)}
-                />
-              </td>
-              <td className="border-r">
-                <Input
-                  className="border-0 bg-transparent focus:border-0 focus-visible:ring-0 focus:outline-none hover:bg-transparent"
-                  defaultValue={job.title}
-                  onBlur={(e) => onUpdate(job.id!, { title: e.target.value })}
-                />
-              </td>
+          {jobs.map((job) => {
+            const isEdited = job.id in editedJobs;
+            return (
+              <tr
+                key={job.id ?? job.title}
+                className={`border-t hover:bg-gray-50 ${
+                  isEdited ? "bg-yellow-50" : ""
+                }`}
+              >
+                <td className="border-r">
+                  <Checkbox
+                    checked={selectedJobs.includes(job.id)}
+                    onCheckedChange={() => onToggleSelection(job.id)}
+                  />
+                </td>
+                <td className="border-r">
+                  <Input
+                    className={`border-0 bg-transparent focus:border-0 focus-visible:ring-0 focus:outline-none hover:bg-transparent ${
+                      isFieldEdited(job.id, "title")
+                        ? "ring-1 ring-yellow-400"
+                        : ""
+                    }`}
+                    defaultValue={job.title}
+                    onBlur={(e) => onUpdate(job.id!, { title: e.target.value })}
+                  />
+                </td>
 
-              <td className="border-r">
-                <Input
-                  className="border-0 bg-transparent focus-visible:ring-0 focus:outline-none hover:bg-transparent rounded"
-                  defaultValue={job.company}
-                  onBlur={(e) => onUpdate(job.id!, { company: e.target.value })}
-                />
-              </td>
+                <td className="border-r">
+                  <Input
+                    className={`border-0 bg-transparent focus-visible:ring-0 focus:outline-none hover:bg-transparent rounded ${
+                      isFieldEdited(job.id, "company")
+                        ? "ring-1 ring-yellow-400"
+                        : ""
+                    }`}
+                    defaultValue={job.company}
+                    onBlur={(e) =>
+                      onUpdate(job.id!, { company: e.target.value })
+                    }
+                  />
+                </td>
 
-              <td className="border-r">
-                <Input
-                  type="number"
-                  className="border-0 bg-transparent focus:border-0 focus-visible:ring-0 focus:outline-none hover:bg-transparent rounded"
-                  defaultValue={job.maxSalary}
-                  onBlur={(e) =>
-                    onUpdate(job.id!, { maxSalary: e.target.value })
-                  }
-                />
-              </td>
+                <td className="border-r">
+                  <Input
+                    type="number"
+                    className={`border-0 bg-transparent focus:border-0 focus-visible:ring-0 focus:outline-none hover:bg-transparent rounded ${
+                      isFieldEdited(job.id, "maxSalary")
+                        ? "ring-1 ring-yellow-400"
+                        : ""
+                    }`}
+                    defaultValue={job.maxSalary}
+                    onBlur={(e) =>
+                      onUpdate(job.id!, { maxSalary: Number(e.target.value) })
+                    }
+                  />
+                </td>
 
-              <td className="border-r">
-                <Input
-                  className="border-0 bg-transparent focus:border-0 focus-visible:ring-0 focus:outline-none hover:bg-transparent rounded"
-                  defaultValue={job.location}
-                  onBlur={(e) =>
-                    onUpdate(job.id!, { location: e.target.value })
-                  }
-                />
-              </td>
+                <td className="border-r">
+                  <Input
+                    className={`border-0 bg-transparent focus:border-0 focus-visible:ring-0 focus:outline-none hover:bg-transparent rounded ${
+                      isFieldEdited(job.id, "location")
+                        ? "ring-1 ring-yellow-400"
+                        : ""
+                    }`}
+                    defaultValue={job.location}
+                    onBlur={(e) =>
+                      onUpdate(job.id!, { location: e.target.value })
+                    }
+                  />
+                </td>
 
-              <td className="border-r">
-                <Select
-                  value={job.status}
-                  onValueChange={(value) =>
-                    handleStatusUpdate(job.id!, value as JobStatus)
-                  }
-                >
-                  <SelectTrigger className="border-0 bg-transparent focus-visible:ring-0 focus:outline-none hover:bg-gray-100">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[
-                      "Bookmarked",
-                      "Applying",
-                      "Applied",
-                      "Interviewing",
-                      "Negotiating",
-                      "Accepted",
-                    ].map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </td>
+                <td className="border-r">
+                  <Select
+                    value={job.status}
+                    onValueChange={(value) =>
+                      handleStatusUpdate(job.id!, value as JobStatus)
+                    }
+                  >
+                    <SelectTrigger
+                      className={`border-0 bg-transparent focus-visible:ring-0 focus:outline-none hover:bg-gray-100 ${
+                        isFieldEdited(job.id, "status")
+                          ? "ring-1 ring-yellow-400"
+                          : ""
+                      }`}
+                    >
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[
+                        "Bookmarked",
+                        "Applying",
+                        "Applied",
+                        "Interviewing",
+                        "Negotiating",
+                        "Accepted",
+                      ].map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </td>
 
-              <td className="border-r">
-                <DatePicker
-                  value={
-                    job.interviewDate ? new Date(job.interviewDate) : undefined
-                  }
-                  onChange={(date) =>
-                    onUpdate(job.id!, { interviewDate: date?.toISOString() })
-                  }
-                />
-              </td>
+                <td className="border-r">
+                  <DatePicker
+                    value={
+                      job.interviewDate
+                        ? new Date(job.interviewDate)
+                        : undefined
+                    }
+                    onChange={(date) =>
+                      onUpdate(job.id!, { interviewDate: date?.toISOString() })
+                    }
+                    isEdited={isFieldEdited(job.id, "interviewDate")}
+                  />
+                </td>
 
-              <td className="border-r">
-                <DatePicker
-                  value={job.dateSaved ? new Date(job.dateSaved) : undefined}
-                  onChange={(date) =>
-                    onUpdate(job.id!, { dateSaved: date?.toISOString() })
-                  }
-                />
-              </td>
+                <td className="border-r">
+                  <DatePicker
+                    value={job.dateSaved ? new Date(job.dateSaved) : undefined}
+                    onChange={(date) =>
+                      onUpdate(job.id!, { dateSaved: date?.toISOString() })
+                    }
+                    isEdited={isFieldEdited(job.id, "dateSaved")}
+                  />
+                </td>
 
-              <td className="border-r">
-                <DatePicker
-                  value={
-                    job.dateApplied ? new Date(job.dateApplied) : undefined
-                  }
-                  onChange={(date) =>
-                    onUpdate(job.id!, { dateApplied: date?.toISOString() })
-                  }
-                />
-              </td>
+                <td className="border-r">
+                  <DatePicker
+                    value={
+                      job.dateApplied ? new Date(job.dateApplied) : undefined
+                    }
+                    onChange={(date) =>
+                      onUpdate(job.id!, { dateApplied: date?.toISOString() })
+                    }
+                    isEdited={isFieldEdited(job.id, "dateApplied")}
+                  />
+                </td>
 
-              <td className="border-r">
-                <DatePicker
-                  value={job.deadline ? new Date(job.deadline) : undefined}
-                  onChange={(date) =>
-                    onUpdate(job.id!, { deadline: date?.toISOString() })
-                  }
-                />
-              </td>
-            </tr>
-          ))}
+                <td className="border-r">
+                  <DatePicker
+                    value={job.deadline ? new Date(job.deadline) : undefined}
+                    onChange={(date) =>
+                      onUpdate(job.id!, { deadline: date?.toISOString() })
+                    }
+                    isEdited={isFieldEdited(job.id, "deadline")}
+                  />
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

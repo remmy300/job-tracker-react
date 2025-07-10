@@ -50,7 +50,7 @@ const SelectedJobs = ({
   };
 
   return selectedJobs.length > 0 ? (
-    <div className="flex items-center gap-4 p-4 bg-gray-100 rounded shadow">
+    <div className="flex items-center gap-4 ">
       <span>{selectedJobs.length} selected</span>
 
       <Select

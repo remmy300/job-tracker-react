@@ -12,7 +12,7 @@ export interface Job {
   company: string;
   status: JobStatus;
   location: string;
-  maxSalary: string;
+  maxSalary: number;
   dateSaved: string;
   dateApplied: string;
   interviewDate?: string;

@@ -29,5 +29,5 @@ export const loginWithGoogle = () => {
 };
 
 export const logout = () => {
-  signOut(auth);
+  return signOut(auth);
 };
