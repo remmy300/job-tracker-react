@@ -27,16 +27,24 @@ const JobModal = () => {
       console.log("User is not authenticated.");
       return;
     }
+
     try {
       await addJob({
         ...data,
+        maxSalary: 0,
+        excitement: 3,
+        dateSaved: new Date().toISOString(),
+        dateApplied: "",
+        deadline: "",
         userId: user.uid,
         createdAt: new Date().toISOString(),
         status: "Bookmarked",
+        description: data.description ?? "",
       });
-      console.log("Job added succefully:", data);
+
+      console.log("✅ Job added successfully:", data);
     } catch (error) {
-      console.log("Failed to add a new job:", error);
+      console.log("❌ Failed to add a new job:", error);
     }
   };
 

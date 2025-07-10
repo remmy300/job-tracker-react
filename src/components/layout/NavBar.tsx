@@ -22,7 +22,7 @@ const NavBar = () => {
       await logout();
       navigate("/auth");
     } catch (err) {
-      alert("Logout failed");
+      console.log("Logout failed:", err);
     }
   };
 

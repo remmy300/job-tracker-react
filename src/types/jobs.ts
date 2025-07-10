@@ -19,4 +19,6 @@ export interface Job {
   interviewDate?: string;
   excitement: number;
   deadline: string;
+  userId: string;
+  createdAt: string;
 }

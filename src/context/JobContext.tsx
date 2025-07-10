@@ -70,6 +70,7 @@ const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           return {
             ...data,
             id: doc.id,
+
             dateSaved: convertFirestoreDate(data.dateSaved),
             dateApplied: convertFirestoreDate(data.dateApplied),
             deadline: convertFirestoreDate(data.deadline),
@@ -84,7 +85,7 @@ const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     );
 
     return () => unsub();
-  }, [user?.uid]);
+  }, [user?.uid, user]);
 
   const addJob = async (job: Omit<Job, "id">) => {
     if (!user) return;

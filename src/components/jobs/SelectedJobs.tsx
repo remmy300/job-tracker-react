@@ -1,5 +1,3 @@
-import React, { useState } from "react";
-
 import { useJobContext } from "../../context/JobContext";
 import type { Job } from "../../types/jobs";
 import {
