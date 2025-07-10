@@ -6,6 +6,7 @@ import type { JobStatus, Job } from "../types/jobs";
 import JobTable from "../components/jobs/JobTable";
 import SelectedJobs from "../components/jobs/SelectedJobs";
 import { Button } from "../components/ui/button";
+import { useAuth } from "../context/AuthContext";
 const DashBoard = () => {
   const { jobs, updateJob } = useJobContext();
   const [filterStatus, setFilterStatus] = useState<JobStatus | null>(null);
@@ -14,6 +15,7 @@ const DashBoard = () => {
     {}
   );
   const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuth();
 
   const filteredJobs = filterStatus
     ? jobs.filter((job) => job.status === filterStatus)
@@ -62,6 +64,11 @@ const DashBoard = () => {
 
   return (
     <div className="space-y-6 p-4">
+      {!user && (
+        <p className="text-gray-500 mb-4">
+          Log in to save jobs and track your progress.
+        </p>
+      )}
       <StatusSteps
         jobs={jobs}
         onStatusClick={(status) => {
@@ -70,26 +77,34 @@ const DashBoard = () => {
       />
 
       <div className="flex justify-between bg-white/90 rounded shadow p-2">
-        <SelectedJobs
-          selectedJobs={selectedJobs}
-          onStatusSelection={() => setSelectedJobs([])}
-        />
-        <div className="flex gap-2">
-          <Button
-            onClick={handleSaveAllEdits}
-            disabled={Object.keys(editedJobs).length === 0 || isSaving}
-            className={`variant-outlined m-2 rounded-md ${
-              Object.keys(editedJobs).length > 0
-                ? "bg-green-500 text-white hover:bg-green-600"
-                : "bg-gray-300 text-gray-900 cursor-not-allowed"
-            }`}
-          >
-            {isSaving
-              ? "Saving..."
-              : `Save All Changes (${Object.keys(editedJobs).length})`}
-          </Button>
-          <JobModal />
-        </div>
+        {user ? (
+          <>
+            <SelectedJobs
+              selectedJobs={selectedJobs}
+              onStatusSelection={() => setSelectedJobs([])}
+            />
+            <div className="flex gap-2">
+              <Button
+                onClick={handleSaveAllEdits}
+                disabled={Object.keys(editedJobs).length === 0 || isSaving}
+                className={`variant-outlined m-2 rounded-md ${
+                  Object.keys(editedJobs).length > 0
+                    ? "bg-green-500 text-white hover:bg-green-600"
+                    : "bg-gray-300 text-gray-900 cursor-not-allowed"
+                }`}
+              >
+                {isSaving
+                  ? "Saving..."
+                  : `Save All Changes (${Object.keys(editedJobs).length})`}
+              </Button>
+              <JobModal />
+            </div>
+          </>
+        ) : (
+          <p className="text-center text-sm mt-4 text-gray-400">
+            🔒 You must log in to add jobs.
+          </p>
+        )}
       </div>
 
       <JobTable

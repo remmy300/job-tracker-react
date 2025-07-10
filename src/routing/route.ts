@@ -15,7 +15,7 @@ export const router = createBrowserRouter([
         element: React.createElement(Login),
       },
       {
-        path: "dashboard",
+        index: true,
         element: React.createElement(Dashboard),
       },
       {
