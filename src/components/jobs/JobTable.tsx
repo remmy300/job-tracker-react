@@ -2,6 +2,8 @@ import type { Job, JobStatus } from "../../types/jobs";
 import { Input } from "../ui/input";
 import { DatePicker } from "../ui/DatePicker";
 import { Checkbox } from "../ui/checkbox";
+import { useNavigate } from "react-router-dom";
+import { formatCurrency } from "../../utils/Format";
 import {
   Select,
   SelectContent,
@@ -18,11 +20,6 @@ interface Props {
   onToggleSelection: (jobId: string) => void;
 }
 
-const formatDate = (isoString?: string) => {
-  if (!isoString) return "-";
-  return new Date(isoString).toLocaleDateString();
-};
-
 const JobTable = ({
   jobs = [],
   onUpdate,
@@ -30,6 +27,7 @@ const JobTable = ({
   editedJobs,
   onToggleSelection,
 }: Props) => {
+  const navigate = useNavigate();
   const handleStatusUpdate = async (id: string, newStatus: JobStatus) => {
     try {
       await onUpdate(id, { status: newStatus });
@@ -38,7 +36,6 @@ const JobTable = ({
     }
   };
 
-  // Helper to check if a field was edited
   const isFieldEdited = (jobId: string, field: keyof Job) => {
     return editedJobs[jobId] && field in editedJobs[jobId];
   };
@@ -107,6 +104,7 @@ const JobTable = ({
                     onBlur={(e) =>
                       onUpdate(job.id!, { company: e.target.value })
                     }
+                    onClick={() => navigate(`/details/${job.id}`)}
                   />
                 </td>
 
@@ -118,7 +116,7 @@ const JobTable = ({
                         ? "ring-1 ring-yellow-400"
                         : ""
                     }`}
-                    defaultValue={job.maxSalary}
+                    defaultValue={formatCurrency(job.maxSalary)}
                     onBlur={(e) =>
                       onUpdate(job.id!, { maxSalary: Number(e.target.value) })
                     }
