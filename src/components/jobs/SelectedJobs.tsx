@@ -1,5 +1,6 @@
 import { useJobContext } from "../../context/JobContext";
 import type { Job } from "../../types/jobs";
+import { useState } from "react";
 import {
   Select,
   SelectItem,

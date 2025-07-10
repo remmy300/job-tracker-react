@@ -22,26 +22,21 @@ interface JobContextType {
   updateJob: (job: { id: string } & Partial<Job>) => Promise<void>;
 }
 
-// Helper function to safely convert any date format
 const convertFirestoreDate = (date: unknown): string | undefined => {
   if (!date) return undefined;
 
-  // If it's a Firestore Timestamp
   if (date instanceof Timestamp) {
     return date.toDate().toISOString();
   }
 
-  // If it's a JavaScript Date object
   if (date instanceof Date) {
     return date.toISOString();
   }
 
-  // If it's already a string
   if (typeof date === "string") {
     return date;
   }
 
-  // If it's a number (milliseconds)
   if (typeof date === "number") {
     return new Date(date).toISOString();
   }
