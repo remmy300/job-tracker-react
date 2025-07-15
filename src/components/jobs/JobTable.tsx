@@ -63,6 +63,7 @@ const JobTable = ({
             <th className="p-2 text-left">Date Saved</th>
             <th className="p-2 text-left">Date Applied</th>
             <th className="p-2 text-left">Deadline</th>
+            <th className="p-2 text-left">Excitement</th>
           </tr>
         </thead>
         <tbody>
@@ -214,6 +215,21 @@ const JobTable = ({
                     }
                     isEdited={isFieldEdited(job.id, "deadline")}
                   />
+                </td>
+                <td className="border-r">
+                  {[1, 2, 3, 4, 5].map((val) => (
+                    <span
+                      key={val}
+                      className={`cursor-pointer ${
+                        val <= job.excitement
+                          ? "text-yellow-400"
+                          : "text-gray-300"
+                      }`}
+                      onClick={() => onUpdate(job.id!, { excitement: val })}
+                    >
+                      ★
+                    </span>
+                  ))}
                 </td>
               </tr>
             );

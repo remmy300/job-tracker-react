@@ -7,6 +7,15 @@ import JobTable from "../components/jobs/JobTable";
 import SelectedJobs from "../components/jobs/SelectedJobs";
 import { Button } from "../components/ui/button";
 import { useAuth } from "../context/AuthContext";
+import {
+  Select,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+  SelectItem,
+  SelectContent,
+  SelectGroup,
+} from "../components/ui/select";
 const DashBoard = () => {
   const { jobs, updateJob } = useJobContext();
   const [filterStatus, setFilterStatus] = useState<JobStatus | null>(null);
@@ -15,13 +24,30 @@ const DashBoard = () => {
     {}
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [sortBy, setSortBy] = useState<
+    "excitement" | "dateApplied" | "company"
+  >("dateApplied");
   const { user } = useAuth();
 
   const filteredJobs = filterStatus
     ? jobs.filter((job) => job.status === filterStatus)
     : undefined;
 
-  const jobsToDisplay = filteredJobs ?? jobs;
+  const jobsToDisplay = [...(filteredJobs ?? jobs)].sort((a, b) => {
+    switch (sortBy) {
+      case "excitement":
+        return b.excitement - a.excitement;
+      case "company":
+        return a.company.localeCompare(b.company);
+      case "dateApplied":
+        return (
+          new Date(b.dateApplied || 0).getTime() -
+          new Date(a.dateApplied || 0).getTime()
+        );
+      default:
+        return 0;
+    }
+  });
 
   const handleJobUpdate = async (id: string, updates: Partial<Job>) => {
     setEditedJobs((prev) => ({
@@ -65,7 +91,7 @@ const DashBoard = () => {
   return (
     <div className="space-y-6 p-4">
       {!user && (
-        <p className="text-gray-500 mb-4">
+        <p className="text-gray-500 mb-4 text-2xl font-semibold">
           Log in to save jobs and track your progress.
         </p>
       )}
@@ -97,11 +123,29 @@ const DashBoard = () => {
                   ? "Saving..."
                   : `Save All Changes (${Object.keys(editedJobs).length})`}
               </Button>
+
+              <Select
+                value={sortBy}
+                onValueChange={(val) => setSortBy(val as typeof sortBy)}
+              >
+                <SelectTrigger className="m-2 bg-gray-200 hover:bg-gray-300 shadow">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Sort By:</SelectLabel>
+                    <SelectItem value="excitement">Excitement</SelectItem>
+                    <SelectItem value="dateApplied">Date Applied</SelectItem>
+                    <SelectItem value="company">Company</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+
               <JobModal />
             </div>
           </>
         ) : (
-          <p className="text-center text-sm mt-4 text-gray-400">
+          <p className="text-center text-lg  mt-4 text-gray-400 font-semibold ">
             🔒 You must log in to add jobs.
           </p>
         )}

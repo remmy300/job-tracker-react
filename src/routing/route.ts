@@ -19,6 +19,10 @@ export const router = createBrowserRouter([
         element: React.createElement(Dashboard),
       },
       {
+        path: "dashboard",
+        element: React.createElement(Dashboard),
+      },
+      {
         path: "details/:jobId",
         element: React.createElement(Details),
       },
