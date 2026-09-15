@@ -1,3 +1,6 @@
+"use client";
+
+import { toast } from "sonner";
 import StatusSteps from "../components/jobs/StatusSteps";
 import JobModal from "../components/jobs/AddJobModal";
 import { useJobContext } from "../context/JobContext";
@@ -16,6 +19,7 @@ import {
   SelectContent,
   SelectGroup,
 } from "../components/ui/select";
+
 const DashBoard = () => {
   const { jobs, updateJob } = useJobContext();
   const [filterStatus, setFilterStatus] = useState<JobStatus | null>(null);
@@ -58,7 +62,11 @@ const DashBoard = () => {
     try {
       await updateJob({ id, ...updates });
     } catch (error) {
-      console.error("Failed to update job:", error);
+      toast.error(
+        `Failed to update job: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
@@ -73,8 +81,13 @@ const DashBoard = () => {
         )
       );
       setEditedJobs({});
+      toast.success("All changes saved");
     } catch (error) {
-      console.error("Failed to save some jobs:", error);
+      toast.error(
+        `Failed to save some jobs: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     } finally {
       setIsSaving(false);
     }

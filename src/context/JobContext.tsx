@@ -1,19 +1,9 @@
-import {
-  doc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  collection,
-  where,
-  onSnapshot,
-  serverTimestamp,
-  Timestamp,
-} from "firebase/firestore";
-import { useAuth } from "./AuthContext";
+"use client";
+
 import React, { useState, useEffect, useContext, createContext } from "react";
 import type { Job } from "../types/jobs";
-import { db } from "../utils/firebase";
+import { createClient } from "../lib/supabase/client";
+import { useAuth } from "./AuthContext";
 
 interface JobContextType {
   jobs: Job[];
@@ -22,84 +12,129 @@ interface JobContextType {
   updateJob: (job: { id: string } & Partial<Job>) => Promise<void>;
 }
 
-const convertFirestoreDate = (date: unknown): string | undefined => {
-  if (!date) return undefined;
+// The `jobs` table stores snake_case columns; the app works with the camelCase `Job` type.
+interface JobRow {
+  id: string;
+  user_id: string;
+  title: string;
+  company: string;
+  description: string;
+  status: Job["status"];
+  location: string;
+  max_salary: number;
+  date_saved: string | null;
+  date_applied: string | null;
+  interview_date: string | null;
+  excitement: number;
+  deadline: string | null;
+  created_at: string;
+}
 
-  if (date instanceof Timestamp) {
-    return date.toDate().toISOString();
-  }
+const rowToJob = (row: JobRow): Job => ({
+  id: row.id,
+  userId: row.user_id,
+  title: row.title,
+  company: row.company,
+  description: row.description,
+  status: row.status,
+  location: row.location,
+  maxSalary: row.max_salary,
+  dateSaved: row.date_saved ?? "",
+  dateApplied: row.date_applied ?? "",
+  interviewDate: row.interview_date ?? undefined,
+  excitement: row.excitement,
+  deadline: row.deadline ?? "",
+  createdAt: row.created_at,
+});
 
-  if (date instanceof Date) {
-    return date.toISOString();
-  }
-
-  if (typeof date === "string") {
-    return date;
-  }
-
-  if (typeof date === "number") {
-    return new Date(date).toISOString();
-  }
-
-  return undefined;
+const jobToRow = (job: Partial<Job>) => {
+  const row: Record<string, unknown> = {};
+  if (job.title !== undefined) row.title = job.title;
+  if (job.company !== undefined) row.company = job.company;
+  if (job.description !== undefined) row.description = job.description;
+  if (job.status !== undefined) row.status = job.status;
+  if (job.location !== undefined) row.location = job.location;
+  if (job.maxSalary !== undefined) row.max_salary = job.maxSalary;
+  if (job.dateSaved !== undefined) row.date_saved = job.dateSaved || null;
+  if (job.dateApplied !== undefined) row.date_applied = job.dateApplied || null;
+  if (job.interviewDate !== undefined)
+    row.interview_date = job.interviewDate || null;
+  if (job.excitement !== undefined) row.excitement = job.excitement;
+  if (job.deadline !== undefined) row.deadline = job.deadline || null;
+  return row;
 };
 
 const JobContext = createContext<JobContextType | null>(null);
 
-const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const JobProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!user) return;
-    const q = query(collection(db, "jobs"), where("userId", "==", user.uid));
+    if (!user) {
+      setJobs([]);
+      return;
+    }
 
-    const unsub = onSnapshot(
-      q,
-      (snapshot) => {
-        console.log("Snapshot docs:", snapshot.docs);
+    const supabase = createClient();
 
-        const fetchedJob: Job[] = snapshot.docs.map((doc) => {
-          const data = doc.data();
-          console.log("📄 Job doc:", data);
-          return {
-            ...data,
-            id: doc.id,
+    const fetchJobs = async () => {
+      const { data, error } = await supabase
+        .from("jobs")
+        .select("*")
+        .eq("user_id", user.id);
 
-            dateSaved: convertFirestoreDate(data.dateSaved),
-            dateApplied: convertFirestoreDate(data.dateApplied),
-            deadline: convertFirestoreDate(data.deadline),
-            interviewDate: convertFirestoreDate(data.interviewDate),
-          } as Job;
-        });
-        setJobs(fetchedJob);
-      },
-      (error) => {
+      if (error) {
         console.error("Error fetching jobs:", error);
+        return;
       }
-    );
 
-    return () => unsub();
-  }, [user?.uid, user]);
+      setJobs((data as JobRow[]).map(rowToJob));
+    };
+
+    fetchJobs();
+
+    const channel = supabase
+      .channel("jobs-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "jobs", filter: `user_id=eq.${user.id}` },
+        () => fetchJobs()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const addJob = async (job: Omit<Job, "id">) => {
     if (!user) return;
-    console.log("Current user:", user);
+    const supabase = createClient();
 
-    await addDoc(collection(db, "jobs"), {
-      ...job,
-      userId: user.uid,
-      dateSaved: serverTimestamp(),
+    const { error } = await supabase.from("jobs").insert({
+      ...jobToRow(job),
+      user_id: user.id,
     });
-    console.log("🔥 Job being saved:", job);
+
+    if (error) throw error;
   };
 
   const deleteJob = async (id: string) => {
-    await deleteDoc(doc(db, "jobs", id));
+    const supabase = createClient();
+    const { error } = await supabase.from("jobs").delete().eq("id", id);
+    if (error) throw error;
   };
 
   const updateJob = async ({ id, ...rest }: { id: string } & Partial<Job>) => {
-    await updateDoc(doc(db, "jobs", id!), rest);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("jobs")
+      .update(jobToRow(rest))
+      .eq("id", id);
+    if (error) throw error;
   };
 
   return (

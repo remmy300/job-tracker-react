@@ -1,6 +1,8 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useJobContext } from "../context/JobContext";
-import { formatCurrency } from "../utils/Format";
+"use client";
+
+import { useParams, useRouter } from "next/navigation";
+import { useJobContext } from "../../../context/JobContext";
+import { formatCurrency } from "../../../utils/Format";
 import {
   Briefcase,
   CalendarDays,
@@ -20,8 +22,8 @@ const formatDate = (date?: string) =>
     : "-";
 
 const Details = () => {
-  const { jobId } = useParams();
-  const navigate = useNavigate();
+  const { jobId } = useParams<{ jobId: string }>();
+  const router = useRouter();
   const { jobs } = useJobContext();
 
   const job = jobs.find((job) => job.id === jobId);
@@ -39,7 +41,7 @@ const Details = () => {
         </h1>
         <p className="text-lg text-teal-500 font-semibold">{job.company}</p>
         <span
-          className={`inline-block mt-2 px-3 py-1 text-sm rounded-full font-medium 
+          className={`inline-block mt-2 px-3 py-1 text-sm rounded-full font-medium
             ${
               job.status === "Applied"
                 ? "bg-blue-100 text-blue-800"
@@ -107,7 +109,7 @@ const Details = () => {
 
       <div className="flex gap-3 mt-6">
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={() => router.push("/")}
           className="flex items-center gap-2 text-sm text-teal-600 font-semibold hover:underline"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard

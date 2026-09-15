@@ -1,3 +1,6 @@
+"use client";
+
+import { toast } from "sonner";
 import { useJobContext } from "../../context/JobContext";
 import type { Job } from "../../types/jobs";
 import { useState } from "react";
@@ -9,6 +12,17 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Button } from "../ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
 
 interface SelectedJobsProps {
   selectedJobs: string[];
@@ -28,8 +42,14 @@ const SelectedJobs = ({
     setIsDeleting(true);
     try {
       await Promise.all(selectedJobs.map(deleteJob));
-      console.log(`${selectedJobs.length} jobs deleted`);
+      toast.success(`Deleted ${selectedJobs.length} job(s)`);
       onStatusSelection("deleted");
+    } catch (error) {
+      toast.error(
+        `Failed to delete jobs: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -40,11 +60,15 @@ const SelectedJobs = ({
       await Promise.all(
         selectedJobs.map((id) => updateJob({ id, status: newStatus }))
       );
-      console.log(`Updated ${selectedJobs.length} jobs to ${newStatus}`);
+      toast.success(`Updated ${selectedJobs.length} job(s) to ${newStatus}`);
       onStatusSelection("deleted");
       setSelectedStatus("");
     } catch (error) {
-      console.error("Error updating status:", error);
+      toast.error(
+        `Failed to update jobs: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
@@ -79,14 +103,34 @@ const SelectedJobs = ({
       </Select>
 
       <Button
-        onClick={() => alert("Archive not implemented")}
+        onClick={() => toast("Archive not implemented yet")}
         variant="outline"
       >
         Archive
       </Button>
-      <Button onClick={handleDeleteSelectedJobs} variant="destructive">
-        {isDeleting ? "Deleting..." : "Delete"}
-      </Button>
+
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="destructive" disabled={isDeleting}>
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedJobs.length} job(s)?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This can&apos;t be undone. These job applications will be
+              permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteSelectedJobs}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   ) : null;
 };

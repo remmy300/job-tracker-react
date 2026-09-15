@@ -1,8 +1,11 @@
+"use client";
+
+import { toast } from "sonner";
 import type { Job, JobStatus } from "../../types/jobs";
 import { Input } from "../ui/input";
 import { DatePicker } from "../ui/DatePicker";
 import { Checkbox } from "../ui/checkbox";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { formatCurrency } from "../../utils/Format";
 import {
   Select,
@@ -27,12 +30,16 @@ const JobTable = ({
   editedJobs,
   onToggleSelection,
 }: Props) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const handleStatusUpdate = async (id: string, newStatus: JobStatus) => {
     try {
       await onUpdate(id, { status: newStatus });
     } catch (error) {
-      console.error("Failed to update status:", error);
+      toast.error(
+        `Failed to update status: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
@@ -105,7 +112,7 @@ const JobTable = ({
                     onBlur={(e) =>
                       onUpdate(job.id!, { company: e.target.value })
                     }
-                    onClick={() => navigate(`/details/${job.id}`)}
+                    onClick={() => router.push(`/jobs/${job.id}`)}
                   />
                 </td>
 

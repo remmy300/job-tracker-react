@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -20,11 +24,11 @@ import { useAuth } from "../../context/AuthContext";
 const JobModal = () => {
   const { addJob } = useJobContext();
   const { user } = useAuth();
+  const [open, setOpen] = useState(false);
 
   const handleFormSubmit = async (data: JobFormValues) => {
-    console.log("📥 Form data submitted:", data);
     if (!user) {
-      console.log("User is not authenticated.");
+      toast.error("You must be signed in to add a job.");
       return;
     }
 
@@ -36,20 +40,25 @@ const JobModal = () => {
         dateSaved: new Date().toISOString(),
         dateApplied: "",
         deadline: "",
-        userId: user.uid,
+        userId: user.id,
         createdAt: new Date().toISOString(),
         status: "Bookmarked",
         description: data.description ?? "",
       });
 
-      console.log("✅ Job added successfully:", data);
+      toast.success(`Added ${data.title} at ${data.company}`);
+      setOpen(false);
     } catch (error) {
-      console.log("❌ Failed to add a new job:", error);
+      toast.error(
+        `Failed to add job: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <form>
         <DialogTrigger asChild>
           <Button variant="outline" className="bg-green-300 m-2">

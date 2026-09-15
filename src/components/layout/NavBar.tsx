@@ -1,33 +1,31 @@
-import { useNavigate, Link } from "react-router-dom";
-import { logout } from "../../auth/Auth";
-import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../../utils/firebase";
+"use client";
+
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { toast } from "sonner";
+import { logout } from "../../lib/auth";
+import { useAuth } from "../../context/AuthContext";
 import { Button } from "../ui/button";
 import { Briefcase, LayoutDashboard } from "lucide-react";
 
 const NavBar = () => {
-  const navigate = useNavigate();
-  const [user, setUser] = useState<null | object>(null);
-
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsub(); // cleanup listener
-  }, []);
+  const router = useRouter();
+  const { user } = useAuth();
 
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/login");
+      router.push("/login");
+      router.refresh();
     } catch (err) {
-      console.log("Logout failed:", err);
+      toast.error(
+        `Logout failed: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
     }
   };
 
   const handleSignUp = () => {
-    navigate("/login");
+    router.push("/login");
   };
 
   return (
@@ -40,7 +38,7 @@ const NavBar = () => {
       </h1>
       <div className="px-3 gap-4 flex  items-center">
         {user && (
-          <Link to="/dashboard" className="text-teal-400 hover:underline">
+          <Link href="/" className="text-teal-400 hover:underline">
             <LayoutDashboard size={25} />
           </Link>
         )}
