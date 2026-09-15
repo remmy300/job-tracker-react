@@ -16,16 +16,16 @@ const Login = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto rounded shadow-md bg-white/90 p-6 space-y-4 mt-20">
+    <div className="mx-auto mt-20 w-full max-w-md rounded-xl border bg-white p-8 shadow-sm">
       <h1 className="text-xl font-semibold text-center">
         Sign in to Job Tracker
       </h1>
 
-      <Button type="button" onClick={handleGoogle} className="w-full">
+      <Button type="button" onClick={handleGoogle} className="h-11 w-full">
         Continue with Google
       </Button>
 
-      <Button type="button" onClick={handleGithub} className="w-full">
+      <Button type="button" onClick={handleGithub} className="h-11 w-full">
         Continue with GitHub
       </Button>
     </div>

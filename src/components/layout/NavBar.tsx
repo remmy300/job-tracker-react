@@ -19,7 +19,7 @@ const NavBar = () => {
       router.refresh();
     } catch (err) {
       toast.error(
-        `Logout failed: ${err instanceof Error ? err.message : "Unknown error"}`
+        `Logout failed: ${err instanceof Error ? err.message : "Unknown error"}`,
       );
     }
   };
@@ -30,18 +30,13 @@ const NavBar = () => {
 
   return (
     <div className="flex justify-between items-center bg-white-90 shadow p-3">
-      <h1 className="text-2xl font-bold flex items-center gap-2">
+      <Link href="/" className="text-2xl font-bold flex items-center gap-2">
         Job
         <span className="text-2xl text-teal-600 font-bold flex items-center gap-1">
           Tracker <Briefcase size={25} />
         </span>
-      </h1>
+      </Link>
       <div className="px-3 gap-4 flex  items-center">
-        {user && (
-          <Link href="/" className="text-teal-400 hover:underline">
-            <LayoutDashboard size={25} />
-          </Link>
-        )}
         {!user ? (
           <Button
             onClick={handleSignUp}
